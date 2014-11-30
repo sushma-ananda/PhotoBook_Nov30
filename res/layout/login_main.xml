@@ -1,0 +1,75 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="${relativePackage}.${activityClass}"
+   android:background="@drawable/background" >
+
+    <Button
+        android:id="@+id/signUp"
+        android:layout_width="100dp"
+        android:layout_height="50dp"
+        android:layout_alignParentRight="true"
+        android:layout_below="@+id/login"
+        android:layout_marginRight="75dp"
+        android:text="Sign Up!"
+        android:textColor="@color/lightgold"
+        android:textSize="20sp" />
+
+    
+
+    <Button
+        android:id="@+id/login"
+        android:layout_width="100dp"
+        android:layout_height="50dp"
+        android:layout_alignLeft="@+id/password"
+        android:layout_below="@+id/password"
+        android:text="Login"
+        android:textColor="@color/lightgold"
+        android:textSize="20sp" />
+
+
+
+    <TextView
+        android:id="@+id/accountText"
+        android:layout_width="400dp"
+        android:layout_height="wrap_content"
+        android:layout_alignBaseline="@+id/signUp"
+        android:layout_alignBottom="@+id/signUp"
+        android:layout_alignParentRight="true"
+        android:text="Don&apos;t have an account?"
+        android:textColor="@color/orange"
+        android:textColorLink="@color/gold"
+        android:textSize="20sp" />
+
+    <EditText
+        android:id="@+id/username"
+        android:layout_width="400dp"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_centerVertical="true"
+        android:ems="10"
+        android:hint="Username"
+        android:maxLines="1"
+        android:textColor="@color/white"
+        android:textColorLink="@color/gold"
+        android:textSize="25sp" />
+
+    <EditText
+        android:id="@+id/password"
+        android:layout_width="400dp"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/username"
+        android:layout_below="@+id/username"
+        android:ems="10"
+        android:hint="Password"
+        android:inputType="textPassword"
+        android:maxLines="1"
+        android:textColor="@color/white"
+        android:textColorLink="@color/gold"
+        android:textSize="25sp" >
+
+        <requestFocus />
+    </EditText>
+
+</RelativeLayout>

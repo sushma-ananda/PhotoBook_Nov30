@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android" >
+    <item android:id="@+id/return_to_Stream"
+          android:title="Back"
+          android:icon="@drawable/ic_menu_back"
+          android:orderInCategory="10"
+          android:showAsAction="always" />
+    
+    <item android:id="@+id/delete"
+          android:title="Delete"
+          android:icon="@drawable/ic_menu_delete"
+          android:orderInCategory="20"
+          android:showAsAction="always" />
+
+</menu>
