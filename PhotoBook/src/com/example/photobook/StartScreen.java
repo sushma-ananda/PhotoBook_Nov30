@@ -134,6 +134,7 @@ public class StartScreen extends Activity {
 					result = welcomemessage;
 					/*Open login screen*/
 					Intent openPictureBook = new Intent(StartScreen.this, PictureStream.class);
+					openPictureBook.putExtra("userName", userName);
 					openPictureBook.putExtra("userID", json.getString(TAG_MESSAGE));
 					openPictureBook.putExtra("welcome", welcomemessage);
 					startActivity(openPictureBook);

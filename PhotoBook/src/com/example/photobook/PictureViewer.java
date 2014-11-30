@@ -3,7 +3,14 @@ package com.example.photobook;
 
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 
+import org.apache.http.NameValuePair;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import com.example.photobook.util.JSONParser;
 import com.nostra13.universalimageloader.cache.disc.impl.UnlimitedDiscCache;
 import com.nostra13.universalimageloader.cache.memory.impl.UsingFreqLimitedMemoryCache;
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
@@ -30,9 +37,12 @@ public class PictureViewer extends Activity {
 	 */
 	
 	RelativeLayout picture;
-	String temperatureData, locationData, timeStampData, altitudeData;
-	TextView temperature, location, timeStamp, altitude;
+	String temperatureData, locationData, timeStampData, altitudeData, captionData, photoPath;
+	TextView temperature, location, timeStamp, altitude, caption;
 	private String photoLocation;
+	
+	
+	JSONParser jsonParse = new JSONParser();
 	
 	/*Create menu with back button*/
 		@Override
@@ -63,18 +73,49 @@ public class PictureViewer extends Activity {
 		location = (TextView)findViewById(R.id.location);
 		timeStamp = (TextView)findViewById(R.id.timeStamp);
 		altitude = (TextView)findViewById(R.id.altitude);
+		caption = (TextView)findViewById(R.id.caption);
 		
 		/*Initialize layout*/
 		picture = (RelativeLayout)findViewById(R.id.pictureViewerLayout);
 		
 		/*Get clicked picture from intent and display*/
-//		picture.setBackground(background);
-		//Use JSON Parser
+		photoPath = String.valueOf(getIntent().getStringExtra("photoUri"));
+		List<NameValuePair> params = new ArrayList<NameValuePair>();
+		JSONObject photoJson = jsonParse.makeHttpRequest(photoPath, "GET", params);
 		
-		/*Get picture information from database and display*/
+		
+		/*Set text with values from photo*/
+		try {
+			temperature.setText(photoJson.getString("locTemp"));
+			location.setText(photoJson.getString("gpsLocation"));
+			timeStamp.setText(photoJson.getString("timeStamp"));
+			altitude.setText(photoJson.getString("locAltitude"));
+			caption.setText(photoJson.getString("photoCaption"));	
+		} catch (JSONException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	
+		
+		initialzeLoader();
 		
 		
-		//DEMO
+		
+		/* Display photo */
+		ImageView photoView = new ImageView(this);
+		RelativeLayout.LayoutParams lp = new RelativeLayout.LayoutParams(
+			RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
+		lp.addRule(RelativeLayout.ABOVE, R.id.caption);
+		lp.setMargins(10,5, 10, 5);
+		photoView.setLayoutParams(lp);
+		
+		ImageLoader.getInstance().displayImage(photoPath, photoView);
+		picture.addView(photoView);
+		
+		
+	}
+	
+	private void initialzeLoader(){
 		/*Initialize image loader*/
 		ImageLoader imageLoader;
 		DisplayImageOptions displayOptions;
@@ -97,21 +138,6 @@ public class PictureViewer extends Activity {
         .defaultDisplayImageOptions(displayOptions)
         .build();
 		ImageLoader.getInstance().init(config);
-		
-		photoLocation = getIntent().getStringExtra("photoUri");
-		
-		
-		/* Display photo */
-		ImageView photoView = new ImageView(this);
-		RelativeLayout.LayoutParams lp = new RelativeLayout.LayoutParams(
-		RelativeLayout.LayoutParams.FILL_PARENT, RelativeLayout.LayoutParams.FILL_PARENT);
-		lp.addRule(RelativeLayout.ABOVE, R.id.temperature);
-		photoView.setLayoutParams(lp);
-		
-		ImageLoader.getInstance().displayImage(photoLocation, photoView);
-		picture.addView(photoView);
-		
-		
 	}
 
 }

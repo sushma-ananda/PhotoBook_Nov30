@@ -10,25 +10,18 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.graphics.Bitmap;
-import android.graphics.Color;
-import android.hardware.Camera;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
-import android.os.Handler;
-import android.os.Message;
 import android.provider.MediaStore;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.GridLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.RelativeLayout;
-import android.widget.TableLayout;
 import android.widget.Toast;
+import android.graphics.Bitmap;
 
 import com.nostra13.universalimageloader.cache.disc.impl.UnlimitedDiscCache;
 import com.nostra13.universalimageloader.cache.memory.impl.UsingFreqLimitedMemoryCache;
@@ -46,10 +39,13 @@ public class PictureStream extends Activity {
 	Uri imageUri;
 	boolean firsttime = true;
 	
-	String photoString, photoName;
+
+	String photoString, photoName, userID, userName;
 	
+	
+
 	int TAKE_PICTURE_REQUEST_CODE = 123456;
-	int userID = 1999;
+	
 	
 	/*Create menu with new photo option, logout, and refresh?*/
 	@Override
@@ -78,16 +74,14 @@ public class PictureStream extends Activity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
-		
-		if(firsttime){
-			firsttime = false;
-			//Show Welcome Message
-			Intent intent = getIntent();
-			String welcome = intent.getStringExtra("welcome");
-		//	userID = Integer.parseInt(intent.getStringExtra("userID"));
-			showDialog("Welcome to PhotoBook", welcome);
-		}
-		
+		firsttime = false;
+		//Show Welcome Message
+		Intent intent = getIntent();
+		String welcome = intent.getStringExtra("welcome");
+
+		showDialog("Welcome to PhotoBook", welcome);
+		userName = String.valueOf(getIntent().getStringExtra("username"));
+		userID = String.valueOf(getIntent().getStringExtra("userID"));
 		imageStream = (GridLayout) findViewById(R.id.imageStream);
 		
 		/*Check for local directory of photos, if not create one*/
@@ -101,36 +95,51 @@ public class PictureStream extends Activity {
 	
 	private void loadStream(){
 		//	Use JSON Parser to load stream. Add each to layout with putPhotoInLayout	
+		try {
+			JSONArray picturesJson = httpReq.getPhotos(this, userName);
+			
+			for(int i = 0; i < picturesJson.length(); i++){
+				putPhotoInLayout(picturesJson.getJSONObject(i));
+			}
+	
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 	
 	
 	private View putPhotoInLayout(final JSONObject photoObject){
 		//Switch to stream??
-		GridLayout photoLayout = new GridLayout(this);
+		LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
+				LinearLayout.LayoutParams.MATCH_PARENT,
+				LinearLayout.LayoutParams.MATCH_PARENT);
+		
+
 		ImageView photoImageView = new ImageView(this);
-		GridLayout.LayoutParams lp = new GridLayout.LayoutParams(); 
+		photoImageView.setBackgroundResource(R.drawable.photobackground);
+		lp.setMargins(50, 10, 50, 20);
 		photoImageView.setLayoutParams(lp);
-		
-			try {
-				//Check correct field of JSON Object
-				ImageLoader.getInstance().displayImage(photoObject.getString("image_url"), photoImageView);
-			} catch (JSONException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		
-		photoLayout.addView(photoImageView);
+
+		photoImageView.setPadding(70, 60, 70, 250);
+
+		initialzeLoader();
+
+		// Check correct field of JSON Object
+		ImageLoader.getInstance().displayImage(imageUri.toString(), photoImageView);
+		imageStream.addView(photoImageView);
 		//set on click listener for picture viewer, one for each or one to tell which picture clicked
 		photoImageView.setOnClickListener(new View.OnClickListener() {
-			String photoUri = imageUri.toString();
+
+			String photoPath = imageUri.toString();
 			
 			@Override
 			public void onClick(View v) {
-				openPictureViewer(photoUri);
+				openPictureViewer(photoPath);
 			}
 		});
 		
-		return photoLayout;
+		return imageStream;
 	}
 	
 	/*Take a picture*/
@@ -139,10 +148,8 @@ public class PictureStream extends Activity {
 		Intent takePicture = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
 		photoName = String.valueOf(System.currentTimeMillis());
 		photo = new File(photoStorage, photoName + ".jpg");
-		takePicture.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(photo));
-		
+		takePicture.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(photo));		
 		imageUri = Uri.fromFile(photo);
-		
 		startActivityForResult(takePicture, TAKE_PICTURE_REQUEST_CODE);
 	}
 	
@@ -153,6 +160,8 @@ public class PictureStream extends Activity {
 			Intent openPictureEditor = new Intent(PictureStream.this, PictureEditor.class);
 			String photoUri = imageUri.toString();
 			openPictureEditor.putExtra("photoUri", photoUri);
+			openPictureEditor.putExtra("userName", userName);
+			openPictureEditor.putExtra("userID", userID);
 			openPictureEditor.putExtra("photoName", photoName);
 			startActivity(openPictureEditor);
 			
@@ -167,6 +176,31 @@ public class PictureStream extends Activity {
 		openViewer.putExtra("photoUri", photoUri);
 		startActivity(openViewer);
 		
+	}
+	
+	private void initialzeLoader(){
+		/*Initialize image loader*/
+		ImageLoader imageLoader;
+		DisplayImageOptions displayOptions;
+		
+		imageLoader = ImageLoader.getInstance();
+		
+		displayOptions = new DisplayImageOptions.Builder()
+		.cacheInMemory(true)
+		.cacheOnDisc(true)
+		.bitmapConfig(Bitmap.Config.RGB_565)
+		.build();
+		
+		File cacheDir = StorageUtils.getCacheDirectory(this);
+		ImageLoaderConfiguration config = new ImageLoaderConfiguration.Builder(getApplicationContext())
+        .threadPoolSize(3)
+        .threadPriority(Thread.NORM_PRIORITY - 1)
+        .memoryCache(new UsingFreqLimitedMemoryCache(2 * 1024 * 1024)) // 2 MBs
+        .discCache(new UnlimitedDiscCache(cacheDir))
+        .discCacheSize(50 * 1024 * 1024) // 50 MBs
+        .defaultDisplayImageOptions(displayOptions)
+        .build();
+		ImageLoader.getInstance().init(config);
 	}
 	
 	private void showDialog(String title, String message) {

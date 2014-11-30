@@ -22,6 +22,7 @@ import android.os.IBinder;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.example.photobook.PictureStream;
 import com.example.photobook.StartScreen.Login;
 import com.example.photobook.util.JSONParser;
 import com.nostra13.universalimageloader.cache.disc.impl.UnlimitedDiscCache;

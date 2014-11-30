@@ -3,12 +3,17 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    tools:context="${relativePackage}.${activityClass}" >
+    tools:context="${relativePackage}.${activityClass}" 
+    android:background="@color/black"
+   >
+    
+    <LinearLayout
+	    android:id="@+id/imageStream"
+	    android:layout_width="match_parent"
+	    android:layout_height="wrap_content"
+	    android:orientation="vertical" >
 
-    <GridLayout
-        android:id="@+id/imageStream"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent" >
-    </GridLayout>
+	</LinearLayout>
 
+   
 </ScrollView>
